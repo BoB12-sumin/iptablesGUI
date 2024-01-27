@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>나의 방화벽</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+
+<body>
+    <h1>Firewall Management</h1>
+    <h2>차단 IP 주소</h2>
+    <form action="/block_ip" method="post">
+        <label for="ip">차단할 IP 주소:</label>
+        <input type="text" id="ip" name="ip" required>
+        <button type="submit">차단</button>
+    </form>
+    <table>
+        <thead>
+            <tr>
+                <th>IP주소</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ip in blocked_ips %}
+            <tr>
+                <td>{{ ip }}</td>
+                <td>
+                    <form action="{{url_for('delete_ip', ip=ip)}}" method="post">
+                        <button type="submit">삭제</button>
+                    </form>
+
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+
+</html>

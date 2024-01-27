@@ -2,26 +2,11 @@ from flask import Flask, render_template, request
 import re, subprocess
 # import time
 from flask import jsonify
+from api.ipfunc import get_blocked_ips, get_conntrack
 
 app = Flask(__name__)
 
 # blocked_ips = []
-
-def get_blocked_ips():
-    result = subprocess.run(["sudo", "iptables", "-nvL"], capture_output=True, text=True)
-    output = result.stdout
-
-    forward_chain = re.search(r'Chain FORWARD.*?Chain', output, re.DOTALL)
-    if not forward_chain:
-        return []
-
-    forward_chain_output = forward_chain.group(0)
-
-    ips = re.findall(r'DROP\s+all\s+--\s+\*\s+\*\s+(\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b)|ACCEPT\s+all\s+--\s+\*\s+\*\s+(\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b)', forward_chain_output)
-
-    flat_ips = [ip for tuple in ips for ip in tuple if ip]
-
-    return flat_ips
 
 @app.route("/")
 def home():
@@ -30,7 +15,9 @@ def home():
 
 @app.route("/monitor")
 def monitor():
-    return render_template("monitor.html")
+    result=get_conntrack()
+
+    return render_template("monitor.html", logs=result)
 
 @app.route("/policy")
 def policy():
@@ -39,8 +26,6 @@ def policy():
 @app.route("/block_ip", methods=["POST"])
 def block_ip():
     ip_to_block = request.get_json()['ip']
-    # print("차단할 IP:", ip_to_block)
-    # blocked_ips.append(ip_to_block)
     subprocess.run(["sudo", "iptables", "-A", "FORWARD", "-s", ip_to_block, "-j", "DROP"])
     response = {'status': 'success', 'message': 'IP deleted'}
     return jsonify(response)
@@ -75,8 +60,6 @@ def edit_ip(old_index):
         response = {'status': 'error', 'message': 'IP not found'}
 
     return jsonify(response)
-
-
 
 
 

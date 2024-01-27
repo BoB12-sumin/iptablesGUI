@@ -36,9 +36,29 @@
     </nav>
     <div class="back-container">
         <div class="content-box">
-            <div class="result-box-title">⚠️Monitor</div>
+            <div class="result-box-title">💻Monitor</div>
 
             <div class="result-box-contents">
+                <div class="row">
+                    <div class="col-md-6">
+
+                        <div class="sub-box-title">📜Conntrack Allow Log</div>
+                        <div class="row row-cols-1 row-cols-md-1 g-4">
+                            {% for log in logs %}
+                            <div>{{log}}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+
+                    <div class="col-md-6">
+                        <div class="sub-box-title">📜차단 IP List (오른쪽)</div>
+                        <div class="row row-cols-1 row-cols-md-3 g-4">
+
+                        </div>
+                    </div>
+                </div>
+                <br>
             </div>
         </div>
     </div>

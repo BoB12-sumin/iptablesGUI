@@ -1,0 +1,15 @@
+command1 = "sudo iptables -nvL"
+command2 = "sudo iptables -A FORWARD -p tcp --dport 80 -j DROP"
+command3 = "sudo iptables -F FORWARD"
+command4 = "sudo iptables -D FORWARD -p tcp --dport 80 -j DROP"
+command5 = "sudo iptables -A FORWARD -p tcp --dport 80 -j LOG --log-prefix 'MYDROP: ' --log-level 4"
+
+우선순위
+sudo iptables -I FORWARD 1 -s 10.0.1.1 -j ACCEPT
+
+bash
+source ~/.venv/flask/bin/activate
+
+conntrack
+sudo iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+

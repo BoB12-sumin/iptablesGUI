@@ -17,24 +17,27 @@ def get_blocked_ips():
 
     return flat_ips
 
-import subprocess
-import re
 
-def get_conntrack(ip_address=None):
+
+def get_conntrack(option=None):
     cmd = ["sudo", "conntrack", "-L"]
-    
-    if ip_address:
-        cmd.extend(["-s", ip_address])
+
+    print(option)
+    if option:
+        ooptlist=option.split(" ")
+        cmd.extend(ooptlist)
+        print(cmd)
 
     result = subprocess.run(cmd, capture_output=True, text=True)
     output = result.stdout
     lines = output.split('\n')
 
+    print(result)
+
     conntrack_info = []
 
     for line in lines:
         if "TIME_WAIT" in line:
-            # 정규 표현식을 사용하여 필요한 정보 추출
             match = re.search(r'src=(\d+\.\d+\.\d+\.\d+) dst=(\d+\.\d+\.\d+\.\d+) sport=(\d+) dport=(\d+)', line)
             if match:
                 src_ip = match.group(1)
@@ -44,5 +47,50 @@ def get_conntrack(ip_address=None):
                 conntrack_info.append({"src_ip": src_ip, "dst_ip": dst_ip, "sport": sport, "dport": dport})
 
     return conntrack_info
+
+
+def block_kernel_cmd(option=None):
+    optlist=option.split(" ")
+    cmd1 = ["sudo", "iptables", "-A", "FORWARD"] + optlist + ["-j", "LOG", "--log-prefix", "MYDROP: ", "--log-level", "4"]
+    print(cmd1)
+
+    result1 = subprocess.run(cmd1)
+    print("{} 성공 {}".format(cmd1, result1))
+
+    cmd2 = ["sudo", "iptables", "-A", "FORWARD"] + optlist + ["-j", "DROP"]
+    print(cmd2)
+
+    result2 = subprocess.run(cmd2)
+    print("{} 성공 {}".format(cmd2, result2))
+
+    return result2
+
+
+def allow_kernel_cmd(option=None):
+    optlist=option.split(" ")
+    cmd1 = ["sudo", "iptables", "-D", "FORWARD"] + optlist + ["-j", "LOG", "--log-prefix", "MYDROP: ", "--log-level", "4"]
+    print(cmd1)
+
+    result1 = subprocess.run(cmd1)
+    print("{} 성공 {}".format(cmd1, result1))
+
+    cmd2 = ["sudo", "iptables", "-D", "FORWARD"] + optlist + ["-j", "DROP"]
+    print(cmd2)
+
+    result2 = subprocess.run(cmd2)
+    print("{} 성공 {}".format(cmd2, result2))
+
+    return result2
+
+def view_kernel_cmd():
+    try:
+        logs = subprocess.check_output("dmesg -T | grep MYDROP", shell=True).decode("utf-8")
+        print(logs)
+        return logs
+    except subprocess.CalledProcessError as e:
+        print(f"Error: {e}")
+        return ""
+
+
 
 # export FLASK_APP=ipfunc.py

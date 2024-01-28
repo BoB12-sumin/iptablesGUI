@@ -12,6 +12,89 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nanum+Gothic&display=swap">
 
     <script>
+        function SearchIP() {
+            var ip = document.getElementById("ip").value;
+            fetch('/search_ip', {
+                method: 'POST',
+                body: JSON.stringify({ ip: ip }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    updateLogs(data);
+                });
+        }
+
+        function updateLogs(data) {
+            var logsContainer = document.getElementById('logsContainer');
+            logsContainer.innerHTML = '';
+
+            data.forEach(log => {
+                var tr = document.createElement('tr');
+
+                var srcTd = document.createElement('td');
+                srcTd.textContent = log.src_ip;
+                tr.appendChild(srcTd);
+
+                var sportTd = document.createElement('td');
+                sportTd.textContent = log.sport;
+                tr.appendChild(sportTd);
+
+                var dstTd = document.createElement('td');
+                dstTd.textContent = log.dst_ip;
+                tr.appendChild(dstTd);
+
+                var dportTd = document.createElement('td');
+                dportTd.textContent = log.dport;
+                tr.appendChild(dportTd);
+
+                logsContainer.appendChild(tr);
+            });
+        }
+
+        function KernelBlock() {
+            var cmd = document.getElementById("cmd").value;
+            fetch('/block_kernel', {
+                method: 'POST',
+                body: JSON.stringify({ cmd: cmd }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                });
+        }
+
+        function KernelAllow() {
+            var cmd = document.getElementById("cmd").value;
+            fetch('/allow_kernel', {
+                method: 'POST',
+                body: JSON.stringify({ cmd: cmd }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                });
+        }
+
+        function KernelLog() {
+            var cmd = document.getElementById("cmd").value;
+            fetch('/log_kernel', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                });
+        }
+
     </script>
 
 </head>
@@ -41,21 +124,44 @@
             <div class="result-box-contents">
                 <div class="row">
                     <div class="col-md-6">
-
                         <div class="sub-box-title">📜Conntrack Allow Log</div>
-                        <div class="row row-cols-1 row-cols-md-1 g-4">
-                            {% for log in logs %}
-                            <div>{{log}}</div>
-                            {% endfor %}
-                        </div>
+                        <input type="text" id="ip" name="ip" placeholder="-s 1.0.2.3" required>
+                        <button onclick="SearchIP()">검색</button>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>src</th>
+                                    <th>sport</th>
+                                    <th>dst</th>
+                                    <th>dport</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsContainer">
+                            </tbody>
+
+                        </table>
                     </div>
 
 
                     <div class="col-md-6">
-                        <div class="sub-box-title">📜차단 IP List (오른쪽)</div>
-                        <div class="row row-cols-1 row-cols-md-3 g-4">
+                        <div class="sub-box-title">📜Kernel Log</div>
+                        <input type="text" id="cmd" name="cmd" placeholder="-p tcp --dport 80" required>
+                        <button onclick="KernelBlock()">차단</button>
+                        <button onclick="KernelAlloW()">허용</button>
+                        <button onclick="KernelLog()">조회</button>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>src</th>
+                                    <th>sport</th>
+                                    <th>dst</th>
+                                    <th>dport</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsContainer">
+                            </tbody>
 
-                        </div>
+                        </table>
                     </div>
                 </div>
                 <br>
@@ -75,7 +181,7 @@
             </div>
         </div>
         <div class="text-center p-3">
-            © 2020 Copyright: sumin Lee
+            © 2024 Copyright: sumin Lee
         </div>
     </footer>
 

@@ -2,7 +2,7 @@ from flask import Flask, render_template, request
 import re, subprocess
 # import time
 from flask import jsonify
-from api.ipfunc import get_blocked_ips, get_conntrack
+from api.ipfunc import get_blocked_ips, get_conntrack, block_kernel_cmd, allow_kernel_cmd, view_kernel_cmd
 
 app = Flask(__name__)
 
@@ -13,11 +13,52 @@ def home():
     blocked_ips = get_blocked_ips()
     return render_template("index.html", blocked_ips=blocked_ips)
 
-@app.route("/monitor")
-def monitor():
-    result=get_conntrack()
+conntrack_result = []
 
-    return render_template("monitor.html", logs=result)
+@app.route("/monitor", methods=["GET"])
+def monitor():
+    # GET 요청을 처리하는 기존 코드
+    return render_template("monitor.html")
+
+@app.route("/search_ip", methods=["POST"])
+def search_ip():
+    json_data = request.get_json()
+    if json_data and 'ip' in json_data:
+        ipoption = json_data['ip']
+        conntrack_result = get_conntrack(option=ipoption)
+        return jsonify(conntrack_result)
+    else:
+        return jsonify({"error": "Invalid request"}), 400
+
+@app.route("/block_kernel", methods=["POST"])
+def block_kernel():
+    json_data = request.get_json()
+    print(json_data)
+    if json_data and 'cmd' in json_data:
+        option = json_data['cmd']
+        print("option: ", option)
+        result = block_kernel_cmd(option=option)
+        return jsonify(str(result))
+    else:
+        return jsonify({"error": "Invalid request"}), 400
+
+
+@app.route("/allow_kernel", methods=["POST"])
+def allow_kernel():
+    json_data = request.get_json()
+    if json_data and 'cmd' in json_data:
+        option = json_data['cmd']
+        result = allow_kernel_cmd(option=option)
+        return jsonify(result)
+    else:
+        return jsonify({"error": "Invalid request"}), 400
+
+
+@app.route("/log_kernel", methods=["GET"])
+def log_kernel():
+    result = view_kernel_cmd()
+    return jsonify(result)
+
 
 @app.route("/policy")
 def policy():
@@ -60,6 +101,7 @@ def edit_ip(old_index):
         response = {'status': 'error', 'message': 'IP not found'}
 
     return jsonify(response)
+
 
 
 

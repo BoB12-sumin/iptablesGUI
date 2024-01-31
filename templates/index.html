@@ -14,7 +14,7 @@
     <script>
         function blockIP() {
             var ip = document.getElementById("ip").value;
-            fetch('/monitor', {
+            fetch('/block_ip', {
                 method: 'POST',
                 body: JSON.stringify({ ip: ip }),
                 headers: {

@@ -91,9 +91,65 @@
                 }
             }).then(response => response.json())
                 .then(data => {
-                    console.log(data);
+                    updateKernelLog(data);
                 });
         }
+
+        function updateKernelLog(data) {
+            var logsContainer = document.getElementById('logsContainer2');
+            logsContainer.innerHTML = '';
+
+            data.forEach(log => {
+                var tr = document.createElement('tr');
+
+                var inIfsTd = document.createElement('td');
+                inIfsTd.textContent = log.in_ifs;
+                tr.appendChild(inIfsTd);
+
+                var outIfsTd = document.createElement('td');
+                outIfsTd.textContent = log.out_ifs;
+                tr.appendChild(outIfsTd);
+
+                // var macTd = document.createElement('td');
+                // macTd.textContent = log.mac;
+                // tr.appendChild(macTd);
+
+                var sourceIPTd = document.createElement('td');
+                sourceIPTd.textContent = log.Source_IP;
+                tr.appendChild(sourceIPTd);
+
+                var destinationIPTd = document.createElement('td');
+                destinationIPTd.textContent = log.Destination_IP;
+                tr.appendChild(destinationIPTd);
+
+                var lengthTd = document.createElement('td');
+                lengthTd.textContent = log.Length;
+                tr.appendChild(lengthTd);
+
+                // var idTd = document.createElement('td');
+                // idTd.textContent = log.ID;
+                // tr.appendChild(idTd);
+
+                var protoTd = document.createElement('td');
+                protoTd.textContent = log.Protocol;
+                tr.appendChild(protoTd);
+
+                var srcPortTd = document.createElement('td');
+                srcPortTd.textContent = log.Source_Port;
+                tr.appendChild(srcPortTd);
+
+                var dstPortTd = document.createElement('td');
+                dstPortTd.textContent = log.Destination_Port;
+                tr.appendChild(dstPortTd);
+
+                // var windowTd = document.createElement('td');
+                // windowTd.textContent = log.Window;
+                // tr.appendChild(windowTd);
+
+                logsContainer.appendChild(tr);
+            });
+        }
+
 
     </script>
 
@@ -152,13 +208,20 @@
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th>src</th>
+                                    <th>In</th>
+                                    <th>Out</th>
+                                    <!-- <th>MAC Address</th> -->
+                                    <th>srcIP</th>
+                                    <th>dstIP</th>
+                                    <th>Len</th>
+                                    <!-- <th>ID</th> -->
+                                    <th>Protocol</th>
                                     <th>sport</th>
-                                    <th>dst</th>
                                     <th>dport</th>
+                                    <!-- <th>Window</th> -->
                                 </tr>
                             </thead>
-                            <tbody id="logsContainer">
+                            <tbody id="logsContainer2">
                             </tbody>
 
                         </table>

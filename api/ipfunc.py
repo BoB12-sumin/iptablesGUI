@@ -20,6 +20,11 @@ def get_blocked_ips():
 
 
 def get_conntrack(option=None):
+    connset = "sudo iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT"
+    conndel = "sudo iptables -D FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT"
+    connset_result = subprocess.run(connset, shell=True)
+    print("성공했음: ", connset_result)
+
     cmd = ["sudo", "conntrack", "-L"]
 
     print(option)
@@ -37,7 +42,7 @@ def get_conntrack(option=None):
     conntrack_info = []
 
     for line in lines:
-        if "TIME_WAIT" in line:
+        if "ESTABLISHED" or "RELATED" in line:
             match = re.search(r'src=(\d+\.\d+\.\d+\.\d+) dst=(\d+\.\d+\.\d+\.\d+) sport=(\d+) dport=(\d+)', line)
             if match:
                 src_ip = match.group(1)
@@ -45,6 +50,10 @@ def get_conntrack(option=None):
                 sport = match.group(3)
                 dport = match.group(4)
                 conntrack_info.append({"src_ip": src_ip, "dst_ip": dst_ip, "sport": sport, "dport": dport})
+
+    conndel_result = subprocess.run(conndel, shell=True)
+    print("성공했음: ", conndel_result)
+
 
     return conntrack_info
 
@@ -85,8 +94,51 @@ def allow_kernel_cmd(option=None):
 def view_kernel_cmd():
     try:
         logs = subprocess.check_output("dmesg -T | grep MYDROP", shell=True).decode("utf-8")
-        print(logs)
-        return logs
+
+        # print(logs)
+        logs = logs.split("\n")
+        
+        conntrack_info = []
+
+        kernel_log = []
+
+        for log in logs:
+            match = re.search(r'IN=(\w+) OUT=(\w+) MAC=(\S+) SRC=(\d+\.\d+\.\d+\.\d+) DST=(\d+\.\d+\.\d+\.\d+) LEN=(\d+) TOS=0x(\d+) PREC=0x(\d+) TTL=(\d+) ID=(\d+) DF PROTO=(\w+) SPT=(\d+) DPT=(\d+) WINDOW=(\d+) RES=0x(\d+) SYN URGP=(\d+)', log)
+            if match:
+                in_interface = match.group(1)
+                out_interface = match.group(2)
+                mac_address = match.group(3)
+                src_ip = match.group(4)
+                dst_ip = match.group(5)
+                length = match.group(6)
+                tos = match.group(7)
+                prec = match.group(8)
+                ttl = match.group(9)
+                id_num = match.group(10)
+                proto = match.group(11)
+                src_port = match.group(12)
+                dst_port = match.group(13)
+                window = match.group(14)
+                res = match.group(15)
+                syn_urgp = match.group(16)
+
+                kernel_log.append({
+                    "in_ifs":in_interface,
+                    "out_ifs":out_interface,
+                    "mac": mac_address,
+                    "Source_IP": src_ip,
+                    "Destination_IP": dst_ip,
+                    "Length": length,
+                    "ID": id_num,
+                    "Protocol": proto,
+                    "Source_Port": src_port,
+                    "Destination_Port": dst_port,
+                    "Window": window
+                })
+
+
+        print(kernel_log)
+        return kernel_log
     except subprocess.CalledProcessError as e:
         print(f"Error: {e}")
         return ""
